@@ -1,4 +1,4 @@
-﻿import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { db } from '../db/store';
 
 export const authRouter = Router();
@@ -14,7 +14,7 @@ authRouter.get('/users', (req: Request, res: Response) => {
 
 // GET /api/auth/user/:role - Get specific user persona
 authRouter.get('/user/:role', (req: Request, res: Response) => {
-  const user = db.getUser(req.params.role);
+  const user = db.getUser(String(req.params.role));
   if (!user) {
     return res.status(404).json({ success: false, error: 'User profile not found' });
   }

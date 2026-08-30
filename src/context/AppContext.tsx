@@ -214,11 +214,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       panchayat: newIssueData.panchayat || currentUser.panchayat,
       ward: newIssueData.ward || currentUser.ward,
       landmark: newIssueData.landmark || 'Near Panchayat Center',
-      coordinates: newIssueData.coordinates || [25.3180, 82.9745],
-      photoBefore: newIssueData.photoBefore || 'https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=800&auto=format&fit=crop&q=80',
+      coordinates: newIssueData.coordinates || [9.1726, 77.8681],
+      photoBefore: newIssueData.photoBefore || '/images/handpump_before.jpg',
       voiceTranscript: newIssueData.voiceTranscript,
       aiSeverityScore: newIssueData.aiSeverityScore || 82,
-      aiDepartment: newIssueData.aiDepartment || 'Rural Development & Public Works',
+      aiDepartment: newIssueData.aiDepartment || 'TWAD Board & Rural Development Mission',
       timeline: [
         {
           status: 'reported',

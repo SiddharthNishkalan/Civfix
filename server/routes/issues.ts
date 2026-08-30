@@ -1,4 +1,4 @@
-﻿import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { db } from '../db/store';
 import { IssueStatus } from '../../src/types';
 
@@ -24,7 +24,7 @@ issuesRouter.get('/', (req: Request, res: Response) => {
 
 // GET /api/issues/:id - Single issue details
 issuesRouter.get('/:id', (req: Request, res: Response) => {
-  const issue = db.getIssueById(req.params.id);
+  const issue = db.getIssueById(String(req.params.id));
   if (!issue) {
     return res.status(404).json({ success: false, error: 'Grievance not found' });
   }
@@ -74,7 +74,7 @@ issuesRouter.patch('/:id/status', (req: Request, res: Response) => {
   }
 
   const updatedIssue = db.updateIssueStatus(
-    req.params.id, 
+    String(req.params.id), 
     status as IssueStatus, 
     notes, 
     photoAfterUrl, 
@@ -95,7 +95,7 @@ issuesRouter.patch('/:id/status', (req: Request, res: Response) => {
 // POST /api/issues/:id/upvote - Upvote / endorse issue
 issuesRouter.post('/:id/upvote', (req: Request, res: Response) => {
   const { userId } = req.body;
-  const result = db.upvoteIssue(req.params.id, userId || 'USR-7821');
+  const result = db.upvoteIssue(String(req.params.id), userId || 'USR-7821');
 
   if (!result.issue) {
     return res.status(404).json({ success: false, error: 'Grievance not found' });
@@ -118,7 +118,7 @@ issuesRouter.post('/:id/comments', (req: Request, res: Response) => {
   }
 
   const updatedIssue = db.addComment(
-    req.params.id, 
+    String(req.params.id), 
     author || 'Selvi Murugan (Citizen)', 
     role || 'citizen', 
     text
@@ -138,7 +138,7 @@ issuesRouter.post('/:id/comments', (req: Request, res: Response) => {
 // POST /api/issues/:id/escalate - Escalate to District Collector
 issuesRouter.post('/:id/escalate', (req: Request, res: Response) => {
   const { reason, citizenName } = req.body;
-  const issue = db.getIssueById(req.params.id);
+  const issue = db.getIssueById(String(req.params.id));
 
   if (!issue) {
     return res.status(404).json({ success: false, error: 'Grievance not found' });
