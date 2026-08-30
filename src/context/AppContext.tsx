@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Issue, RewardItem, UserRole, IssueStatus, IssueCategory, IssuePriority } from '../types';
 import { INITIAL_USERS, INITIAL_ISSUES, REWARDS_CATALOG, TRANSLATIONS } from '../data/mockData';
+import { api } from '../services/api';
 
 export type PageView = 
   | 'welcome'
@@ -90,6 +91,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return REWARDS_CATALOG;
   });
+
+  // Fetch live issues and rewards from backend API on mount
+  useEffect(() => {
+    let isMounted = true;
+    api.getIssues()
+      .then((res) => {
+        if (isMounted && res.success && res.data && res.data.length > 0) {
+          setIssues(res.data);
+        }
+      })
+      .catch((err) => {
+        console.log('Backend API syncing in background / offline mode active:', err.message);
+      });
+
+    api.getRewards()
+      .then((res) => {
+        if (isMounted && res.success && res.data && res.data.length > 0) {
+          setRewards(res.data);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Save to local storage on changes
   useEffect(() => {
@@ -213,6 +240,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRecentlySubmittedIssue(newIssue);
     setSelectedIssueId(newId);
 
+    // Sync with backend API
+    api.createIssue(newIssue).catch((err) => {
+      console.log('Issue cached locally (offline mode / backend sync deferred):', err.message);
+    });
+
     // Award civic points
     setCurrentUser((prev) => ({
       ...prev,
@@ -267,6 +299,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
 
+    // Sync with backend API
+    api.updateIssueStatus(issueId, newStatus, notes, photoAfter, materialList).catch((err) => {
+      console.log('Status update cached locally:', err.message);
+    });
+
     showNotification(
       'Status Updated', 
       `Ticket ${issueId} is now ${newStatus.toUpperCase()}.`, 
@@ -294,6 +331,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       })
     );
+
+    api.upvoteIssue(issueId, currentUser.id).catch(() => {});
   };
 
   const addComment = (issueId: string, text: string) => {
@@ -316,6 +355,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
 
+    api.addComment(issueId, currentUser.name, currentUser.role, text.trim()).catch(() => {});
+
     showNotification('Comment Posted', 'Your community feedback has been recorded.', 'info');
   };
 
@@ -337,6 +378,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRewards((prev) => 
       prev.map((r) => r.id === rewardId ? { ...r, claimed: true } : r)
     );
+
+    api.redeemReward(rewardId, currentUser.role).catch(() => {});
 
     showNotification(
       'Voucher Claimed! 🎉', 
